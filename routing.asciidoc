@@ -2,10 +2,10 @@
 == Routing on a Network of Payment channels
 In this section we will finally unpack how payment channels can be connected to a network of other payment channels via a process called _routing_.
 Note that we separate the concept of _routing_ from the concept of _path finding_.
-Routing refers to the series of interactions across the network that allow a payment to _flow_ from point A to point B, i.e. the _active_ process of process of sending a payment.
+Routing refers to the series of interactions across the network that allow a payment to _flow_ from point A to point B, i.e. the _active_ process of sending a payment.
 An important rule of thumb is that it's possible for a _path_ to exist between Alice and Bob, yet there may not be an active _route_ on which to send the payment.
 One example is the scenario where all the nodes connecting Alice and Bob are currently off-line. 
-In theory, one can examine the _channel graph_ and connect a series of payment channels from Alice to Beb, hence a _path_ exists.
+In theory, one can examine the _channel graph_ and connect a series of payment channels from Alice to Bob, hence a _path_ exists.
 However, as the intermediary nodes are offline, the payment cannot be sent and so no _route_ exists.
 
 The innovation of routed payment channels allows our gamer Gloria to receive funds from her fans without maintaining a separate channel with every one of her fans who want to tip her.
@@ -58,7 +58,7 @@ And no direct channel from Alice to Gloria is required.
 image:images/routing-network.png[]
 
 The main challenge is to do this in a way that prevents Bob and Wei from stealing the money that Alice wants delivered to Gloria.
-To understand how the Lightning Network protects the payment while being routed, we can compare to an example of routing physical payments with golden coins in the real world.
+To understand how the Lightning Network protects the payment while being routed, we can compare to an example of routing physical payments with gold coins in the real world.
 
 Assume Alice wants to give 10 gold coins to Gloria, but does not have direct access to Gloria.
 However, Alice knows Bob, who knows Wei, who knows Gloria and so she decides to ask Bob and Wei for help.
@@ -228,7 +228,7 @@ Finally we will discuss the precise details concerning the exact mechanics of fo
 
 = Hash Time Locked Contracts as a Conditional Chained End to End Secure Payment =
 
-Our example in the prior section using "golden coins", was intended to lay same base intuition which we'll leverage in this section to explain how HTLCs work in practice.
+Our example in the prior section using "golden coins", was intended to establish some base intuition which we'll leverage in this section to explain how HTLCs work in practice.
 HTLC is actually an acronym that stands for "Hash Time-Locked Contracts". 
 A HTLC is a _specific_ instantiation of a Conditional Chained End to End Secure Payment (CCESP, don't use this acronym?).
 As we'll see in the later chapters, given a set of adequate cryptographic constructs, many other instantiations are possible as well.
@@ -245,12 +245,12 @@ In the golden coins example, this "condition" was the reveal of a hash pre-image
 We could feasibly substitute this hash pre-image reveal for any other construct with "hardness" properties. Namely: it should be infeasible for a party that doesn't know the proper "solution" of the condition to satisfy it, the "description" of the condition shouldn't give away any information about the true "solution", and once a solution has been chosen and a description created from it, it shouldn't be possible to "alter" that solution and have it still be a valid condition for the description. 
 
 The payment should _only_ be able to be redeemed if a valid solution is revealed. Critical, all conditions need to be timed in order to allow the construct to return the funds back to the sender if a solution to this condition isn't revealed.
-The combination of the condition, and a timeout on the condition gives the payment a trait we commonly refer to as atomicity: either the payment happens, or the receiver if refunded the funds.
+The combination of the condition, and a timeout on the condition gives the payment a trait we commonly refer to as atomicity: either the payment happens, or the receiver is refunded the funds.
 
 === Conditional Chained Payment ===
 
 Building upon our conditional payment, it may be possible to *chain* this payment, allowing it to involve the payer, the payee, and possibly several intermediaries. 
-Each intermediary, is able to present a _slightly_ modified version of the condition (without invalidating it all together), and so so in an iterated manner until the conditional payment reaches the payee.
+Each intermediary, is able to present a _slightly_ modified version of the condition (without invalidating it all together), and so on in an iterated manner until the conditional payment reaches the payee.
 Once it reaches the payee, then the payment should be able to be _iteratively_ resolved, starting at the payee all the way back to the payer. 
 
 Each chaining creates an "incoming" and "outgoing" conditional payment.
@@ -265,7 +265,7 @@ The difference between these two payment values makes up the "forwarding fee" co
 With our final addition, we'll achieve "end to end security".
 By this we mean that: no intermediaries are able to "claim" the payment without first obtaining the solution from someone further down from them in the chain.
 Additionally, we also require that the amount the payer intended to send is fully received by the payee.
-Finally, we require that non of the intermediaries are able to "contaminate" the payment beyond giving incorrect directions to the party that directly follows them.
+Finally, we require that none of the intermediaries are able to "contaminate" the payment beyond giving incorrect directions to the party that directly follows them.
 In other words, the intermediary shouldn't be able to materially affect the propagation of the payment several hops away from it.
 
 == Hash Time Locked Contracts ==
@@ -298,11 +298,11 @@ OP_CHECKSIGVERIFY
 Alice can present this script to Bob in order to kick off the conditional payment.
 For the chained aspect, Alice needs to be able to communicate the proper payment details to each hop in the route.
 Recall that each hop will specify a forwarding fee rate, as well as other parameters that express their forwarding policy.
-In addition to this forwarding rate, Alice also needs to be conceded about what time locks to use.
+In addition to this forwarding rate, Alice also needs to be concerned about what time locks to use.
 Each node in the hop needs some time to be able to settle the outgoing, then incoming payment on-chain in the worst case.
 As a result, when constructing the final route, we need to give each node some buffer time, we call this before time, the "time lock delta".
 Factoring in this time-lock delta, the time-lock of the outgoing HTLC will decrease as the route progresses, as the outgoing HTLC will expire before the incoming HTLC.
-This set of decrementing time-locks is critical to the operation of the system, as it ensure out atomicity property for each hop, assuming they're able to get into the chain in time.
+This set of decrementing time-locks is critical to the operation of the system, as it ensures the atomicity property for each hop, assuming they're able to get into the chain in time.
 
 In the next section, we'll go into the exact mechanism of how Alice is able to deliver forwarding details to each hop in the route.
 In addition, we'll dive further into proper time-lock construction, as incorrect time-lock set up can violate our atomicity property and lead to a loss of funds.
@@ -313,7 +313,7 @@ In addition, we'll dive further into proper time-lock construction, as incorrect
 
 So far you have learnt that payment channels can be connected to a network which can be utilized to send payment from one participant to another one through a path of payment channels.
 You have seen that with the use of HTLCs the intermediary nodes along the path are not able to steal any funds that they are supposed to forward and also how a node can set up and settle an HTLC.
-With this bare foundation laid, the following questions may have come across you mind:
+With this bare foundation laid, the following questions may have come across your mind:
 
 - Who chooses the path for a candidate route?
 - How is a path selected as a candidate to attempt to route the HTLC for a payment?
